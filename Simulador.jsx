@@ -390,6 +390,169 @@ function FearCloud({ fear, tip, index }) {
   );
 }
 
+function RegistroForm() {
+  const [form, setForm] = useState({
+    nombre: "",
+    telefono: "",
+    cedula: "",
+    correo: "",
+    genero: "",
+  });
+  const [consent, setConsent] = useState(false);
+  const [submitted, setSubmitted] = useState(false);
+  const [touched, setTouched] = useState(false);
+
+  const update = (field) => (e) => setForm((f) => ({ ...f, [field]: e.target.value }));
+
+  const requiredOk = form.nombre.trim() && form.telefono.trim() && form.cedula.trim() && consent;
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    setTouched(true);
+    if (!requiredOk) return;
+
+    const lines = [
+      "Nuevo registro — INVERYOUNG INTERNATIONAL",
+      `Nombre: ${form.nombre}`,
+      `Teléfono: ${form.telefono}`,
+      `Cédula: ${form.cedula}`,
+      form.correo ? `Correo: ${form.correo}` : null,
+      form.genero ? `Género: ${form.genero}` : null,
+    ].filter(Boolean);
+
+    const text = encodeURIComponent(lines.join("\n"));
+    window.open(`https://wa.me/50577118911?text=${text}`, "_blank", "noopener,noreferrer");
+    setSubmitted(true);
+  };
+
+  const saludo = form.genero === "Mujer" ? "Bienvenida" : form.genero === "Hombre" ? "Bienvenido" : "Bienvenido/a";
+
+  if (submitted) {
+    return (
+      <div
+        className="fade-in"
+        style={{
+          border: `1px solid ${GOLD}`,
+          borderRadius: 16,
+          padding: "36px 28px",
+          textAlign: "center",
+          background: "linear-gradient(135deg, rgba(201,162,39,0.1), transparent)",
+        }}
+      >
+        <div style={{ fontSize: 34, marginBottom: 10 }}>🎉</div>
+        <h3 style={{ fontFamily: "'Fraunces', serif", fontWeight: 600, fontSize: "1.5rem", margin: "0 0 10px" }}>
+          {saludo}{form.nombre ? `, ${form.nombre.split(" ")[0]}` : ""} a INVERYOUNG INTERNATIONAL
+        </h3>
+        <p style={{ color: MUTED, fontSize: 14.5, lineHeight: 1.6, maxWidth: 420, margin: "0 auto" }}>
+          Ya se abrió WhatsApp con tus datos listos para enviar. Confirmá el envío ahí y en breve
+          te contactamos para acompañarte en tus primeros pasos.
+        </p>
+      </div>
+    );
+  }
+
+  const inputStyle = {
+    width: "100%",
+    background: "transparent",
+    border: `1px solid ${BORDER}`,
+    color: INK,
+    borderRadius: 10,
+    padding: "11px 14px",
+    fontFamily: "'Inter', sans-serif",
+    fontSize: 14,
+    marginTop: 6,
+  };
+  const labelStyle = {
+    fontFamily: "'IBM Plex Mono', monospace",
+    fontSize: 11,
+    letterSpacing: "0.05em",
+    textTransform: "uppercase",
+    color: MUTED,
+  };
+
+  return (
+    <form
+      onSubmit={handleSubmit}
+      style={{
+        border: `1px solid ${BORDER}`,
+        borderRadius: 16,
+        padding: "28px 24px",
+        background: BG_CARD,
+      }}
+    >
+      <h3 style={{ fontFamily: "'Fraunces', serif", fontWeight: 600, fontSize: "1.35rem", margin: "0 0 6px" }}>
+        Registrate para el siguiente paso
+      </h3>
+      <p style={{ color: MUTED, fontSize: 13.5, marginBottom: 22 }}>
+        Completá tus datos y te contactamos por WhatsApp.
+      </p>
+
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: 16 }}>
+        <label>
+          <span style={labelStyle}>Nombre completo *</span>
+          <input style={inputStyle} value={form.nombre} onChange={update("nombre")} placeholder="Tu nombre" />
+        </label>
+        <label>
+          <span style={labelStyle}>Teléfono *</span>
+          <input style={inputStyle} value={form.telefono} onChange={update("telefono")} placeholder="+505 0000 0000" />
+        </label>
+        <label>
+          <span style={labelStyle}>Cédula *</span>
+          <input style={inputStyle} value={form.cedula} onChange={update("cedula")} placeholder="000-000000-0000X" />
+        </label>
+        <label>
+          <span style={labelStyle}>Correo (opcional)</span>
+          <input style={inputStyle} type="email" value={form.correo} onChange={update("correo")} placeholder="tu@correo.com" />
+        </label>
+        <label style={{ gridColumn: "1 / -1" }}>
+          <span style={labelStyle}>Género (opcional, para saludarte bien)</span>
+          <select style={inputStyle} value={form.genero} onChange={update("genero")}>
+            <option value="">Prefiero no decir</option>
+            <option value="Mujer">Mujer</option>
+            <option value="Hombre">Hombre</option>
+          </select>
+        </label>
+      </div>
+
+      <label style={{ display: "flex", alignItems: "flex-start", gap: 10, marginTop: 20, cursor: "pointer" }}>
+        <input
+          type="checkbox"
+          checked={consent}
+          onChange={(e) => setConsent(e.target.checked)}
+          style={{ marginTop: 3, accentColor: GOLD }}
+        />
+        <span style={{ color: MUTED, fontSize: 12.5, lineHeight: 1.5 }}>
+          Acepto compartir estos datos por WhatsApp con INVERYOUNG INTERNATIONAL para ser contactado/a.
+        </span>
+      </label>
+
+      {touched && !requiredOk && (
+        <p style={{ color: LOSS, fontSize: 12.5, marginTop: 10 }}>
+          Completá nombre, teléfono, cédula y aceptá el consentimiento para continuar.
+        </p>
+      )}
+
+      <button type="submit" className="btn-lift" style={{
+        marginTop: 20,
+        display: "flex",
+        alignItems: "center",
+        gap: 8,
+        background: GOLD,
+        color: "#161307",
+        border: "none",
+        borderRadius: 10,
+        padding: "12px 22px",
+        fontFamily: "'Inter', sans-serif",
+        fontWeight: 600,
+        fontSize: 14,
+        cursor: "pointer",
+      }}>
+        Enviar <ArrowRight size={16} />
+      </button>
+    </form>
+  );
+}
+
 const PRESETS = [1000, 5000, 10000];
 
 const QUOTES = [
@@ -587,6 +750,7 @@ export default function InveryoungSimulator() {
     >
       <style>{`
         * { box-sizing: border-box; }
+        html { scroll-behavior: smooth; }
         input[type="text"]:focus { outline: 2px solid ${GOLD}; outline-offset: 2px; }
         button:focus-visible, a:focus-visible { outline: 2px solid ${GOLD_LIGHT}; outline-offset: 2px; }
         @keyframes candleGrow {
@@ -960,9 +1124,7 @@ export default function InveryoungSimulator() {
             </p>
           </div>
           <a
-            href="https://wa.me/50577118911?text=Quiero%20aprender%20a%20invertir"
-            target="_blank"
-            rel="noopener noreferrer"
+            href="#registro"
             className="btn-lift"
             style={{
               display: "flex",
@@ -988,6 +1150,13 @@ export default function InveryoungSimulator() {
           Simulación con fines educativos. No constituye asesoría financiera ni garantiza rendimientos.
           Invertir dinero real implica riesgo, incluida la posible pérdida del capital.
         </p>
+        </Reveal>
+      </section>
+
+      {/* Registro */}
+      <section id="registro" style={{ maxWidth: 620, margin: "56px auto 0", padding: "0 24px", scrollMarginTop: 24 }}>
+        <Reveal>
+          <RegistroForm />
         </Reveal>
       </section>
     </div>
