@@ -253,7 +253,235 @@ function StatTile({ icon, label, value, valueColor }) {
   );
 }
 
+function Reveal({ children, delay = 0 }) {
+  const ref = useRef(null);
+  const [shown, setShown] = useState(false);
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const obs = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setShown(true);
+          obs.disconnect();
+        }
+      },
+      { threshold: 0.15 }
+    );
+    obs.observe(el);
+    return () => obs.disconnect();
+  }, []);
+
+  return (
+    <div
+      ref={ref}
+      style={{
+        opacity: shown ? 1 : 0,
+        transform: shown ? "translateY(0)" : "translateY(18px)",
+        transition: `opacity 620ms cubic-bezier(.22,1,.36,1) ${delay}ms, transform 620ms cubic-bezier(.22,1,.36,1) ${delay}ms`,
+      }}
+    >
+      {children}
+    </div>
+  );
+}
+
+const FEARS = [
+  {
+    fear: "Tengo miedo de invertir y perder todo mi dinero.",
+    tip: "Empezá con montos que puedas permitirte perder mientras aprendés. El riesgo se controla con información, no se evita escondiéndose de él.",
+  },
+  {
+    fear: "No entiendo nada de la bolsa, es muy complicado para mí.",
+    tip: "Nadie nace sabiendo leer un gráfico. Cada inversionista exitoso empezó exactamente donde estás vos ahora: sin saber nada.",
+  },
+  {
+    fear: "¿Y si invierto justo antes de que todo baje?",
+    tip: "Nadie puede predecir el punto exacto. Por eso los inversionistas experimentados invierten de a poco y con constancia, no todo de una vez.",
+  },
+  {
+    fear: "Siento que necesito mucho dinero para empezar.",
+    tip: "No es así. Lo que más importa al principio no es cuánto ponés, sino aprender a entender el proceso.",
+  },
+];
+
+function FearCloud({ fear, tip, index }) {
+  const [open, setOpen] = useState(false);
+  return (
+    <Reveal delay={index * 80}>
+      <button
+        onClick={() => setOpen((o) => !o)}
+        style={{
+          all: "unset",
+          cursor: "pointer",
+          display: "block",
+          width: "100%",
+          boxSizing: "border-box",
+        }}
+      >
+        <div
+          className="cloud-shape"
+          style={{
+            position: "relative",
+            background: BG_CARD,
+            border: `1px solid ${open ? "rgba(201,162,39,0.5)" : BORDER}`,
+            borderRadius: 22,
+            padding: "20px 22px",
+            transition: "border-color 300ms ease, transform 200ms ease",
+          }}
+        >
+          <div style={{ display: "flex", alignItems: "flex-start", gap: 12 }}>
+            <span style={{ fontSize: 18, lineHeight: 1, flexShrink: 0, marginTop: 2 }}>💭</span>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <p
+                style={{
+                  fontFamily: "'Fraunces', serif",
+                  fontStyle: "italic",
+                  fontSize: 15.5,
+                  color: INK,
+                  margin: 0,
+                  lineHeight: 1.5,
+                }}
+              >
+                “{fear}”
+              </p>
+              <div
+                style={{
+                  maxHeight: open ? 200 : 0,
+                  opacity: open ? 1 : 0,
+                  overflow: "hidden",
+                  transition: "max-height 380ms ease, opacity 320ms ease",
+                }}
+              >
+                <div
+                  style={{
+                    marginTop: 14,
+                    paddingTop: 14,
+                    borderTop: `1px dashed ${BORDER}`,
+                    display: "flex",
+                    gap: 8,
+                    alignItems: "flex-start",
+                  }}
+                >
+                  <ShieldCheck size={15} color={GOLD} style={{ flexShrink: 0, marginTop: 2 }} />
+                  <p style={{ color: MUTED, fontSize: 13.5, lineHeight: 1.6, margin: 0 }}>{tip}</p>
+                </div>
+              </div>
+              <span
+                style={{
+                  display: "inline-block",
+                  marginTop: 10,
+                  fontFamily: "'IBM Plex Mono', monospace",
+                  fontSize: 10.5,
+                  letterSpacing: "0.06em",
+                  textTransform: "uppercase",
+                  color: GOLD,
+                  opacity: 0.85,
+                }}
+              >
+                {open ? "Ocultar consejo ↑" : "Ver consejo ↓"}
+              </span>
+            </div>
+          </div>
+        </div>
+      </button>
+    </Reveal>
+  );
+}
+
 const PRESETS = [1000, 5000, 10000];
+
+const QUOTES = [
+  { quote: "Nuestro plazo de tenencia favorito es para siempre.", author: "Warren Buffett" },
+  { quote: "El precio es lo que pagás. El valor es lo que obtenés.", author: "Warren Buffett" },
+  { quote: "Nunca inviertas en un negocio que no podés entender.", author: "Warren Buffett" },
+  { quote: "Sabé qué tenés, y sabé por qué lo tenés.", author: "Peter Lynch" },
+  { quote: "El tiempo es tu amigo; el impulso es tu enemigo.", author: "John Bogle" },
+];
+
+function QuoteCarousel() {
+  const [index, setIndex] = useState(0);
+  const [visible, setVisible] = useState(true);
+
+  useEffect(() => {
+    const id = setInterval(() => {
+      setVisible(false);
+      setTimeout(() => {
+        setIndex((i) => (i + 1) % QUOTES.length);
+        setVisible(true);
+      }, 350);
+    }, 4800);
+    return () => clearInterval(id);
+  }, []);
+
+  const current = QUOTES[index];
+
+  return (
+    <div
+      style={{
+        border: `1px solid ${BORDER}`,
+        borderRadius: 16,
+        padding: "32px 28px",
+        background: "linear-gradient(135deg, rgba(201,162,39,0.05), transparent)",
+        textAlign: "center",
+        minHeight: 150,
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        justifyContent: "center",
+      }}
+    >
+      <div
+        style={{
+          opacity: visible ? 1 : 0,
+          transform: visible ? "translateY(0)" : "translateY(6px)",
+          transition: "opacity 350ms ease, transform 350ms ease",
+        }}
+      >
+        <p
+          style={{
+            fontFamily: "'Fraunces', serif",
+            fontStyle: "italic",
+            fontWeight: 500,
+            fontSize: "clamp(1.15rem, 3vw, 1.5rem)",
+            color: INK,
+            maxWidth: 560,
+            margin: "0 auto 14px",
+            lineHeight: 1.4,
+          }}
+        >
+          “{current.quote}”
+        </p>
+        <span
+          style={{
+            fontFamily: "'IBM Plex Mono', monospace",
+            fontSize: 12,
+            letterSpacing: "0.08em",
+            textTransform: "uppercase",
+            color: GOLD_LIGHT,
+          }}
+        >
+          — {current.author}
+        </span>
+      </div>
+      <div style={{ display: "flex", gap: 6, marginTop: 22 }}>
+        {QUOTES.map((_, i) => (
+          <span
+            key={i}
+            style={{
+              width: 5,
+              height: 5,
+              borderRadius: "50%",
+              background: i === index ? GOLD : BORDER,
+              transition: "background 300ms ease",
+            }}
+          />
+        ))}
+      </div>
+    </div>
+  );
+}
 
 export default function InveryoungSimulator() {
   useGoogleFonts();
@@ -346,16 +574,21 @@ export default function InveryoungSimulator() {
     <div
       style={{
         minHeight: "100vh",
-        background: `radial-gradient(ellipse 80% 50% at 50% -10%, rgba(201,162,39,0.08), transparent), ${BG}`,
+        background: `
+          radial-gradient(ellipse 70% 45% at 15% -10%, rgba(201,162,39,0.10), transparent 60%),
+          radial-gradient(ellipse 60% 40% at 100% 25%, rgba(201,162,39,0.05), transparent 60%),
+          ${BG}
+        `,
         color: INK,
         fontFamily: "'Inter', sans-serif",
         paddingBottom: 80,
+        position: "relative",
       }}
     >
       <style>{`
         * { box-sizing: border-box; }
         input[type="text"]:focus { outline: 2px solid ${GOLD}; outline-offset: 2px; }
-        button:focus-visible { outline: 2px solid ${GOLD_LIGHT}; outline-offset: 2px; }
+        button:focus-visible, a:focus-visible { outline: 2px solid ${GOLD_LIGHT}; outline-offset: 2px; }
         @keyframes candleGrow {
           from { opacity: 0; transform: scaleY(0.3); }
           to { opacity: 1; transform: scaleY(1); }
@@ -365,10 +598,30 @@ export default function InveryoungSimulator() {
           to { opacity: 1; transform: translateY(0); }
         }
         .fade-in { animation: fadeUp 420ms ease both; }
+        .bg-grid {
+          position: fixed;
+          inset: 0;
+          pointer-events: none;
+          background-image:
+            linear-gradient(${BORDER} 1px, transparent 1px),
+            linear-gradient(90deg, ${BORDER} 1px, transparent 1px);
+          background-size: 64px 64px;
+          opacity: 0.15;
+          mask-image: radial-gradient(ellipse 70% 50% at 50% 0%, black, transparent 75%);
+          -webkit-mask-image: radial-gradient(ellipse 70% 50% at 50% 0%, black, transparent 75%);
+        }
+        .btn-lift { transition: transform 200ms cubic-bezier(.22,1,.36,1), box-shadow 200ms ease, filter 200ms ease; }
+        .btn-lift:hover { transform: translateY(-2px); box-shadow: 0 10px 28px rgba(201,162,39,0.28); filter: brightness(1.06); }
+        .btn-lift:active { transform: translateY(0); }
+        .card-lift { transition: transform 220ms cubic-bezier(.22,1,.36,1), border-color 220ms ease, background 220ms ease; }
+        .card-lift:hover { transform: translateY(-3px); border-color: rgba(201,162,39,0.4) !important; background: rgba(255,255,255,0.03) !important; }
+        .cloud-shape:hover { transform: translateY(-2px); }
+        .pill:hover { border-color: rgba(201,162,39,0.6) !important; color: ${GOLD_LIGHT} !important; }
         @media (prefers-reduced-motion: reduce) {
           * { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
         }
       `}</style>
+      <div className="bg-grid" />
 
       {/* Header */}
       <header
@@ -452,6 +705,7 @@ export default function InveryoungSimulator() {
             {status !== "running" && (
               <button
                 onClick={startSimulation}
+                className="btn-lift"
                 style={{
                   display: "flex",
                   alignItems: "center",
@@ -480,6 +734,7 @@ export default function InveryoungSimulator() {
                 key={p}
                 onClick={() => handlePreset(p)}
                 disabled={status === "running"}
+                className="pill"
                 style={{
                   background: amount === p && !customAmount ? "rgba(201,162,39,0.14)" : "transparent",
                   border: `1px solid ${amount === p && !customAmount ? GOLD : BORDER}`,
@@ -489,6 +744,7 @@ export default function InveryoungSimulator() {
                   fontFamily: "'IBM Plex Mono', monospace",
                   fontSize: 13,
                   cursor: status === "running" ? "not-allowed" : "pointer",
+                  transition: "border-color 200ms ease, color 200ms ease",
                 }}
               >
                 {nio(p)}
@@ -589,16 +845,18 @@ export default function InveryoungSimulator() {
 
       {/* How it works */}
       <section style={{ maxWidth: 900, margin: "64px auto 0", padding: "0 24px" }}>
-        <h2
-          style={{
-            fontFamily: "'Fraunces', serif",
-            fontWeight: 600,
-            fontSize: "1.6rem",
-            marginBottom: 28,
-          }}
-        >
-          Así funciona antes de que arriesgues dinero real
-        </h2>
+        <Reveal>
+          <h2
+            style={{
+              fontFamily: "'Fraunces', serif",
+              fontWeight: 600,
+              fontSize: "1.6rem",
+              marginBottom: 28,
+            }}
+          >
+            Así funciona antes de que arriesgues dinero real
+          </h2>
+        </Reveal>
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: 20 }}>
           {[
             {
@@ -616,37 +874,70 @@ export default function InveryoungSimulator() {
               title: "Abrí tu cuenta real",
               body: "Cuando te sientas listo, te conectamos con un bróker regulado. Vos abrís tu cuenta y controlás tu dinero — nosotros nunca lo custodiamos.",
             },
-          ].map((s) => (
-            <div
-              key={s.n}
-              style={{
-                border: `1px solid ${BORDER}`,
-                borderRadius: 14,
-                padding: "20px 18px",
-                background: "rgba(255,255,255,0.015)",
-              }}
-            >
-              <span
+          ].map((s, i) => (
+            <Reveal key={s.n} delay={i * 90}>
+              <div
+                className="card-lift"
                 style={{
-                  fontFamily: "'IBM Plex Mono', monospace",
-                  color: GOLD,
-                  fontSize: 12,
-                  letterSpacing: "0.08em",
+                  border: `1px solid ${BORDER}`,
+                  borderRadius: 14,
+                  padding: "20px 18px",
+                  background: "rgba(255,255,255,0.015)",
+                  height: "100%",
                 }}
               >
-                {s.n}
-              </span>
-              <h3 style={{ fontFamily: "'Fraunces', serif", fontWeight: 600, fontSize: "1.1rem", margin: "8px 0 8px" }}>
-                {s.title}
-              </h3>
-              <p style={{ color: MUTED, fontSize: 13.5, lineHeight: 1.6, margin: 0 }}>{s.body}</p>
-            </div>
+                <span
+                  style={{
+                    fontFamily: "'IBM Plex Mono', monospace",
+                    color: GOLD,
+                    fontSize: 12,
+                    letterSpacing: "0.08em",
+                  }}
+                >
+                  {s.n}
+                </span>
+                <h3 style={{ fontFamily: "'Fraunces', serif", fontWeight: 600, fontSize: "1.1rem", margin: "8px 0 8px" }}>
+                  {s.title}
+                </h3>
+                <p style={{ color: MUTED, fontSize: 13.5, lineHeight: 1.6, margin: 0 }}>{s.body}</p>
+              </div>
+            </Reveal>
           ))}
         </div>
       </section>
 
+      {/* Miedos comunes */}
+      <section style={{ maxWidth: 900, margin: "64px auto 0", padding: "0 24px" }}>
+        <Reveal>
+          <h2
+            style={{
+              fontFamily: "'Fraunces', serif",
+              fontWeight: 600,
+              fontSize: "1.6rem",
+              marginBottom: 8,
+            }}
+          >
+            Es normal tener dudas
+          </h2>
+          <p style={{ color: MUTED, fontSize: 14, marginBottom: 28, maxWidth: 480 }}>
+            Tocá cada nube para ver el consejo. Todos empezamos con las mismas preguntas.
+          </p>
+        </Reveal>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))", gap: 16 }}>
+          {FEARS.map((f, i) => (
+            <FearCloud key={i} fear={f.fear} tip={f.tip} index={i} />
+          ))}
+        </div>
+      </section>
+
+      {/* Motivación */}
+      <section style={{ maxWidth: 900, margin: "56px auto 0", padding: "0 24px" }}>
+        <QuoteCarousel />
+      </section>
+
       {/* CTA */}
       <section style={{ maxWidth: 900, margin: "56px auto 0", padding: "0 24px" }}>
+        <Reveal>
         <div
           style={{
             border: `1px solid ${GOLD}`,
@@ -668,7 +959,11 @@ export default function InveryoungSimulator() {
               Empezá con las guías gratis o abrí tu cuenta con nuestro bróker aliado regulado.
             </p>
           </div>
-          <button
+          <a
+            href="https://wa.me/50577118911?text=Quiero%20aprender%20a%20invertir"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="btn-lift"
             style={{
               display: "flex",
               alignItems: "center",
@@ -683,15 +978,17 @@ export default function InveryoungSimulator() {
               fontSize: 14,
               cursor: "pointer",
               whiteSpace: "nowrap",
+              textDecoration: "none",
             }}
           >
             Quiero aprender a invertir <ArrowRight size={16} />
-          </button>
+          </a>
         </div>
         <p style={{ color: MUTED, fontSize: 11.5, lineHeight: 1.6, marginTop: 18, opacity: 0.75 }}>
           Simulación con fines educativos. No constituye asesoría financiera ni garantiza rendimientos.
           Invertir dinero real implica riesgo, incluida la posible pérdida del capital.
         </p>
+        </Reveal>
       </section>
     </div>
   );
